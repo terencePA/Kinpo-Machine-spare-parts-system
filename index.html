@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>機台異常品登記與備品追朔系統 (Run Card)</title>
+  <title>機台異常品登記與備品追朔系統 | Machine Defect & Spare Parts Tracking System</title>
   <style>
     :root { --primary: #1f4e78; --secondary: #4a86e8; --bg: #f4f6f9; --border: #cbd5e1; }
     body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
-    .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
+    .container { max-width: 1250px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
     .header { background: var(--primary); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .header h1 { margin: 0; font-size: 20px; }
     
-    /* 登入遮罩與卡片 */
     .login-box { max-width: 440px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-top: 5px solid var(--primary); }
     .login-box h2 { margin-top: 0; color: var(--primary); font-size: 20px; text-align: center; }
     .role-hint { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 12px; color: #475569; margin-bottom: 16px; line-height: 1.6; }
 
-    /* 主介面與分頁 */
     #mainApp { display: none; }
     .user-bar { background: #e2e8f0; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px solid var(--border); }
     .role-tag { padding: 3px 10px; border-radius: 12px; font-weight: bold; color: #fff; font-size: 12px; }
@@ -24,7 +22,7 @@
     .tag-eng { background: #1d4ed8; }
 
     .tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid var(--primary); flex-wrap: wrap; }
-    .tab-btn { flex: 1; min-width: 150px; padding: 14px; border: none; background: none; font-size: 14px; font-weight: bold; cursor: pointer; color: #475569; }
+    .tab-btn { flex: 1; min-width: 200px; padding: 14px; border: none; background: none; font-size: 14px; font-weight: bold; cursor: pointer; color: #475569; text-align: center; }
     .tab-btn.active { background: #fff; color: var(--primary); border-top: 3px solid var(--primary); }
     .tab-content { display: none; padding: 24px; }
     .tab-content.active { display: block; }
@@ -34,20 +32,18 @@
     .form-group { margin-bottom: 12px; }
     label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #334155; }
     input[type="text"], input[type="date"], input[type="number"], input[type="password"], select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+    input:disabled, select:disabled, textarea:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .btn-submit { background: var(--primary); color: #fff; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 16px; }
     .btn-submit:hover { background: #163a5c; }
     
-    /* 最高權限設定面板 */
     .admin-mail-panel { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
-    .recipient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin: 10px 0; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #fde68a; max-height: 150px; overflow-y: auto; }
+    .recipient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin: 10px 0; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #fde68a; max-height: 150px; overflow-y: auto; }
     .recipient-item { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
     .recipient-item input[type="checkbox"] { width: auto; margin: 0; }
 
-    /* 雲端使用者表格管理區 */
     .user-table-container { margin-top: 15px; overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
 
-    /* 進度看板表格 */
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
     th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
     th { background: #f1f5f9; color: #0f172a; position: sticky; top: 0; }
@@ -61,7 +57,7 @@
     .btn-action { background: #dc2626; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
-    .modal-box { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; }
+    .modal-box { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
     @media (max-width: 768px) { .runcard-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -69,43 +65,63 @@
 
 <!-- 步驟 1：初始權限驗證畫面 -->
 <div id="loginScreen" class="login-box">
-  <h2>🔐 機台異常追朔系統 - 身分驗證</h2>
+  <h2>🔐 系統身分驗證 / Authentication & Login</h2>
   <div class="role-hint">
-    <strong>請輸入您的雲端帳號與密碼進行登入：</strong><br>
-    (對應試算表 「MAIL收件人員」 分頁中的帳號與密碼，例如帳號 <code>admin</code>、密碼 <code>123</code>)[cite: 3]
+    <strong>請輸入雲端帳號與密碼進行登入：</strong><br>
+    Please enter your cloud account & password.
   </div>
   <div class="form-group">
-    <label>帳號 (Account) *</label>
-    <input type="text" id="loginAccount" placeholder="例如: admin / owen / user">
+    <label>帳號 / Account *</label>
+    <input type="text" id="loginAccount" placeholder="請輸入帳號 / Enter account">
   </div>
   <div class="form-group">
-    <label>密碼 (Password) *</label>
-    <input type="password" id="loginPassword" placeholder="請輸入密碼" onkeypress="if(event.key==='Enter') doLogin()">
+    <label>密碼 / Password *</label>
+    <input type="password" id="loginPassword" placeholder="請輸入密碼 / Enter password" onkeypress="if(event.key==='Enter') doLogin()">
   </div>
-  <button class="btn-submit" onclick="doLogin()">登入系統</button>
+  <button class="btn-submit" onclick="doLogin()">登入系統 / Login</button>
   <div id="loginError" style="color:#dc2626; font-size:13px; margin-top:10px; text-align:center; font-weight:bold;"></div>
+</div>
+
+<!-- 新進人員強制修改密碼彈跳視窗 -->
+<div class="modal" id="newStaffModal">
+  <div class="modal-box">
+    <h3 style="margin-top:0; color:#b45309;">⚠️ 偵測為新進人員（預設密碼）<br><span style="font-size:13px; font-weight:normal;">New Staff: Please change your default password</span></h3>
+    <p style="font-size:13px; color:#475569; line-height: 1.6;">
+      您的目前密碼為預設值 (9999)，為了帳號安全，首次登入必須變更您的個人密碼後才能進入系統。<br>
+      <span style="color:#64748b; font-size:12px;">Your current password is the default value (9999). For security, you must change your personal password before entering the system.</span>
+    </p>
+    <div class="form-group">
+      <label>新密碼 / New Password *</label>
+      <input type="password" id="newPwd1" placeholder="請輸入新密碼 / Enter new password">
+    </div>
+    <div class="form-group">
+      <label>確認新密碼 / Confirm Password *</label>
+      <input type="password" id="newPwd2" placeholder="再次輸入新密碼 / Re-enter new password">
+    </div>
+    <button class="btn-submit" style="background:#d97706;" onclick="saveNewPassword()">💾 儲存新密碼並登入 / Save & Login</button>
+    <div id="newPwdError" style="color:#dc2626; font-size:13px; margin-top:10px; text-align:center; font-weight:bold;"></div>
+  </div>
 </div>
 
 <!-- 步驟 2：登入後主系統畫面 -->
 <div id="mainApp" class="container">
   <div class="header">
-    <h1>📋 Machine Defect & Spare Parts Application Tracking Run Card</h1>
-    <span style="font-size: 13px;">每日 08:00 自動寄送 Excel 報表 (10分鐘無操作將自動登出)</span>
+    <h1>📋 機台異常與備品追朔系統 / Machine Defect & Spare Parts Tracking System</h1>
+    <span style="font-size: 12px;">每日 08:00 自動寄送 Excel 報表 (10分鐘無操作自動登出) / Daily Report & Auto-Logout</span>
   </div>
 
-  <!-- 當前使用者狀態列 -->
   <div class="user-bar">
     <div>
-      登入人員：<strong id="currentUserName"></strong> (<span id="currentUserDept"></span>)
+      登入人員 / User：<strong id="currentUserName"></strong> (<span id="currentUserDept"></span>)
       <span id="currentUserBadge" class="role-tag"></span>
     </div>
-    <button class="btn-action" onclick="doLogout()">登出系統 (Logout)</button>
+    <button class="btn-action" onclick="doLogout()">登出 / Logout</button>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('formTab', this)">➕ 1. 登記機台異常與備品申請</button>
-    <button class="tab-btn" onclick="switchTab('listTab', this)">📊 2. 異常品追朔進度紀錄表</button>
-    <button class="tab-btn" id="adminTabBtn" style="display:none; color:#b45309;" onclick="switchTab('adminTab', this)">👑 3. 最高權限與收件/用戶管理</button>
+    <button class="tab-btn active" onclick="switchTab('formTab', this)">➕ 1. 登記異常與備品申請<br><span style="font-size:11px; font-weight:normal;">Defect Registration</span></button>
+    <button class="tab-btn" onclick="switchTab('listTab', this)">📊 2. 異常品追朔進度紀錄表<br><span style="font-size:11px; font-weight:normal;">Tracking & Progress Records</span></button>
+    <button class="tab-btn" id="adminTabBtn" style="display:none; color:#b45309;" onclick="switchTab('adminTab', this)">👑 3. 最高權限與收件/用戶管理<br><span style="font-size:11px; font-weight:normal;">Admin & Recipient Management</span></button>
   </div>
 
   <!-- 分頁一：新增登記 -->
@@ -113,59 +129,71 @@
     <form id="defectForm">
       <div class="runcard-grid">
         <div>
-          <div class="section-title">I. Basic Information & Defect Status (基本資料與異常狀態)</div>
+          <div class="section-title">I. 基本資料與異常狀態 / Basic Information & Defect Status</div>
           <div class="form-group">
-            <label>Equipment Name & ID (機台名稱/編號) *</label>
-            <input type="text" id="equipment" placeholder="例：SMT-Mounter-01" required>
+            <label>機台名稱/編號 / Machine Name & ID *</label>
+            <input type="text" id="equipment" placeholder="例：SMT-Mounter-01 / e.g., SMT-01" required>
           </div>
           <div class="row-2">
             <div class="form-group">
-              <label>Production Line (產線/線別) *</label>
-              <input type="text" id="line" placeholder="例：Line A" required>
+              <label>產線 / Line *</label>
+              <input type="text" id="line" placeholder="例：Line A / e.g., Line A" required>
             </div>
             <div class="form-group">
-              <label>Date Defect Found (異常發現日期) *</label>
-              <input type="date" id="foundDate" required>
+              <label>異常發現日期 / Issue day (yyyy/mm/dd) *</label>
+              <input type="text" id="foundDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" required>
             </div>
           </div>
           <div class="form-group">
-            <label>Reported By (發現人員 / 工號) *</label>
+            <label>發現人員 / Reported By / ME *</label>
             <input type="text" id="reportedBy" required>
           </div>
           <div class="form-group">
-            <label>Detailed Defect Description (不良狀態詳細描述) *</label>
-            <textarea id="defectDesc" rows="5" placeholder="請明確描述故障現象、損壞部件與機台目前是否停機..." required></textarea>
+            <label>異常詳細描述 / Issue Description *</label>
+            <textarea id="defectDesc" rows="5" placeholder="請明確描述故障現象與損壞部件... / Please describe the issue clearly..." required></textarea>
           </div>
         </div>
 
         <div>
-          <div class="section-title">II. Spare Parts Request & Approval Progress (備品申請與進度)</div>
+          <div class="section-title">II. 備品申請與進度 / Spare Parts Request & Progress</div>
           <div class="row-2">
             <div class="form-group">
-              <label>Spare Parts Request Date (備品申請日期)</label>
-              <input type="date" id="reqDate">
+              <label>備品申請日期 / Spare Parts Req. Date (yyyy/mm/dd)</label>
+              <input type="text" id="reqDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'">
             </div>
             <div class="form-group">
-              <label>Requested By (申請人員)</label>
-              <input type="text" id="reqBy" placeholder="申請工程師姓名">
+              <label>申請人員 / Applicant</label>
+              <input type="text" id="reqBy" placeholder="申請工程師姓名 / Applicant Name">
+            </div>
+          </div>
+          
+          <div class="row-2">
+            <div class="form-group">
+              <label>項目 / item</label>
+              <input type="text" id="item" placeholder="例：01 / e.g., Item 01">
+            </div>
+            <div class="form-group">
+              <label>GPN (料號) / Part No.</label>
+              <input type="text" id="gpn" placeholder="例：GPN-12345 / e.g., GPN-12345">
             </div>
           </div>
           <div class="form-group">
-            <label>Part Number & Name (備品料號與品名)</label>
-            <input type="text" id="partInfo" placeholder="例：PN-99812 伺服馬達">
+            <label>規格與品名 / Spec / Description</label>
+            <input type="text" id="specDesc" placeholder="例：伺服馬達 220V 100W / e.g., Servo Motor">
           </div>
+
           <div class="row-2">
             <div class="form-group">
-              <label>Requested Q'ty (申請數量)</label>
+              <label>申請數量 / Req. Q'ty</label>
               <input type="number" id="reqQty" value="1" min="0">
             </div>
             <div class="form-group">
-              <label>Current Stock (現有庫存)</label>
+              <label>現有庫存 / Current Stock</label>
               <input type="number" id="currStock" value="0" min="0">
             </div>
           </div>
           <div class="form-group">
-            <label>Current Status & Progress (目前審核與處理進度)</label>
+            <label>目前進度階段 / Current Status</label>
             <select id="status">
               <option value="1. Pending Supervisor Approval">1. 待主管審核 (Pending Supervisor Approval)</option>
               <option value="2. Pending Procurement / Quotation">2. 採購/詢價處理中 (Pending Procurement / Quotation)</option>
@@ -174,46 +202,47 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Bottleneck / Stuck at (目前卡關階段與原因說明)</label>
-            <input type="text" id="bottleneck" placeholder="例：待課長簽核 / 廠商報價中">
+            <label>卡關階段說明 / Bottleneck</label>
+            <input type="text" id="bottleneck" placeholder="例：待課長簽核 / 廠商報價中 / e.g., Waiting for approval">
           </div>
           <div class="row-2">
             <div class="form-group">
-              <label>Purchase Order Number (採購單號 PO)</label>
-              <input type="text" id="poNumber" placeholder="例：PO-2026111601">
+              <label>採購單號 / PO No.</label>
+              <input type="text" id="poNumber" placeholder="例：PO-2026111601 / e.g., PO-01">
             </div>
             <div class="form-group">
-              <label>ETA / Arrival Date (預計或實際到貨日)</label>
-              <input type="date" id="arrivalDate">
+              <label>預計/實際到貨日 / ETA / ATA (yyyy/mm/dd)</label>
+              <input type="text" id="arrivalDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'">
             </div>
           </div>
         </div>
       </div>
-      <button type="submit" class="btn-submit" id="submitBtn">📤 提交機台異常登記表</button>
+      <button type="submit" class="btn-submit" id="submitBtn">📤 提交機台異常登記表 / Submit Defect Record</button>
     </form>
   </div>
 
   <!-- 分頁二：追朔紀錄看板 -->
   <div id="listTab" class="tab-content">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <strong>即時異常品追朔紀錄表</strong>
-      <button class="btn-edit" onclick="loadRecords()">🔄 重新整理</button>
+      <strong>📊 異常品追朔進度紀錄表 / Tracking & Progress Records</strong>
+      <button class="btn-edit" onclick="loadRecords()">🔄 重新整理 / Refresh</button>
     </div>
     <div style="overflow-x:auto;">
       <table>
         <thead>
           <tr>
-            <th>單號</th>
-            <th>機台 / 產線</th>
-            <th>發現日期 / 異常描述</th>
-            <th>申請備品 / PO單號</th>
-            <th>目前進度與卡關說明</th>
-            <th>維修完畢日</th>
-            <th id="actionColHeader">操作</th>
+            <th>單號<br><small>Ticket ID</small></th>
+            <th>機台 / 產線<br><small>Machine / Line</small></th>
+            <th>發現日期 (yyyy/mm/dd) / 異常描述<br><small>Issue Day / Description</small></th>
+            <th>備品與GPN資訊<br><small>item / GPN / Spec</small></th>
+            <th>申請數量 / 庫存<br><small>Qty / Stock</small></th>
+            <th>目前進度與卡關說明<br><small>Status & Bottleneck</small></th>
+            <th>維修完畢日 (yyyy/mm/dd)<br><small>Completion Date</small></th>
+            <th id="actionColHeader">操作<br><small>Action</small></th>
           </tr>
         </thead>
         <tbody id="recordTableBody">
-          <tr><td colspan="7" style="text-align:center;">載入資料中...</td></tr>
+          <tr><td colspan="8" style="text-align:center;">載入資料中... / Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -222,16 +251,16 @@
   <!-- 分頁三：最高權限設定與收件/用戶管理 -->
   <div id="adminTab" class="tab-content">
     <div class="admin-mail-panel">
-      <h3 style="margin-top:0; color:#b45309;">👑 3. 最高權限設定：使用者權限與郵件收件人管理</h3>
+      <h3 style="margin-top:0; color:#b45309;">👑 3. 最高權限設定：使用者權限與郵件收件人管理<br><span style="font-size:14px; font-weight:normal;">Admin & Recipient Management</span></h3>
       <p style="font-size:13px; color:#78350f; margin-bottom:12px;">
-        在此可直接維護雲端 <strong>MAIL收件人員</strong> 分頁中的所有人員、部門、帳號、密碼、MAIL 與權限[cite: 3]。修改後點擊儲存即可即時更新！
+        在此可維護試算表 <code>MAIL收件人員</code> 分頁中的人員、部門、帳號、密碼、MAIL 與權限角色 (F 欄填入 Manager 或 Admin 即具備最高主管簽核權限)。
       </p>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <strong>👥 雲端使用者與收件人清單管理：</strong>
+        <strong>👥 雲端使用者與收件人清單管理 / Users & Recipient Management：</strong>
         <div style="display:flex; gap:8px;">
-          <button class="btn-edit" style="background:#15803d;" onclick="addNewUserRow()">➕ 新增一列</button>
-          <button class="btn-edit" style="background:#d97706;" onclick="saveUserTableToCloud()">💾 儲存所有修改至雲端</button>
+          <button class="btn-edit" style="background:#15803d;" onclick="addNewUserRow()">➕ 新增一列 / Add Row</button>
+          <button class="btn-edit" style="background:#d97706;" onclick="saveUserTableToCloud()">💾 儲存所有修改至雲端 / Save to Cloud</button>
         </div>
       </div>
 
@@ -239,29 +268,29 @@
         <table id="userManageTable">
           <thead>
             <tr>
-              <th>人員 (Name)</th>
-              <th>部門 (Dept)</th>
-              <th>帳號 (Account)</th>
-              <th>密碼 (Password)</th>
+              <th>人員 / Name</th>
+              <th>部門 / Dept</th>
+              <th>帳號 / Account</th>
+              <th>密碼 / Password</th>
               <th>MAIL</th>
-              <th>權限角色 / 備註</th>
-              <th>操作</th>
+              <th>權限角色 / Position (Manager/Admin)</th>
+              <th>操作 / Action</th>
             </tr>
           </thead>
           <tbody id="userTableBody">
-            <tr><td colspan="7" style="text-align:center;">正在載入使用者名單...</td></tr>
+            <tr><td colspan="7" style="text-align:center;">正在載入使用者名單... / Loading...</td></tr>
           </tbody>
         </table>
       </div>
 
       <hr style="border:0; border-top:1px solid #fde68a; margin:20px 0;">
 
-      <h4 style="margin-top:0; color:#b45309;">📧 Excel 進度報表手動寄信測試</h4>
-      <label>勾選本次要接收報表的收件者：</label>
+      <h4 style="margin-top:0; color:#b45309;">📧 Excel 進度報表手動寄信測試 / Test Email Report</h4>
+      <label>勾選本次要接收報表的收件者 / Select Recipients：</label>
       <div class="recipient-grid" id="recipientCheckboxes"></div>
 
       <button class="btn-submit" id="testMailBtn" style="background:#d97706; margin-top:10px;" onclick="sendTestEmail()">
-        🚀 立即發送測試 Excel 報表 Mail
+        🚀 立即發送測試 Excel 報表 Mail / Send Test Email
       </button>
       <div id="mailTestStatus" style="margin-top:12px; font-size:14px; font-weight:bold;"></div>
     </div>
@@ -271,10 +300,10 @@
 <!-- 更新進度與維修結案視窗 -->
 <div class="modal" id="editModal">
   <div class="modal-box">
-    <h3 style="margin-top:0; color:var(--primary);">🛠️ 更新追朔進度與維修結案紀錄 (<span id="modalTicketId"></span>)</h3>
-    <div class="section-title">II. 更新備品申請與採購進度</div>
+    <h3 style="margin-top:0; color:var(--primary);">🛠️ 更新追朔進度與維修結案紀錄 / Update & Closure (<span id="modalTicketId"></span>)</h3>
+    <div class="section-title">II. 更新備品申請與採購進度 / Update Spare Parts & Procurement Status</div>
     <div class="form-group">
-      <label>目前進度階段 (Current Status)</label>
+      <label>目前進度階段 / Current Status</label>
       <select id="editStatus">
         <option value="1. Pending Supervisor Approval">1. 待主管審核 (Pending Supervisor Approval)</option>
         <option value="2. Pending Procurement / Quotation">2. 採購/詢價處理中 (Pending Procurement / Quotation)</option>
@@ -283,31 +312,34 @@
       </select>
     </div>
     <div class="row-2">
-      <div class="form-group"><label>卡關說明</label><input type="text" id="editBottleneck"></div>
-      <div class="form-group"><label>採購單號 (PO)</label><input type="text" id="editPoNumber"></div>
+      <div class="form-group"><label>卡關階段說明 / Bottleneck</label><input type="text" id="editBottleneck" placeholder="例：待主管簽核 / e.g., Pending"></div>
+      <div class="form-group"><label>採購單號 / PO No.</label><input type="text" id="editPoNumber" placeholder="例：PO-2026111601 / e.g., PO-01"></div>
     </div>
-    <div class="form-group"><label>備品到貨日期</label><input type="date" id="editArrivalDate"></div>
+    <div class="form-group"><label>預計/實際到貨日 / ETA / ATA (yyyy/mm/dd)</label><input type="text" id="editArrivalDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'"></div>
 
-    <div class="section-title">III. Repair & Closure Record (維修與結案紀錄)</div>
+    <div class="section-title">III. 維修與結案紀錄 / Repair & Closure Record</div>
     <div class="row-2">
-      <div class="form-group"><label>備品領用日期</label><input type="date" id="editPickupDate"></div>
-      <div class="form-group"><label>維修完畢日期</label><input type="date" id="editRepairDate"></div>
+      <div class="form-group"><label>備品領用日期 / Parts Issued Date (yyyy/mm/dd)</label><input type="text" id="editPickupDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'"></div>
+      <div class="form-group"><label>維修完畢日期 / Repair Completion Date (yyyy/mm/dd)</label><input type="text" id="editRepairDate" placeholder="yyyy/mm/dd" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'"></div>
     </div>
     <div class="form-group">
-      <label>維修結果確認</label>
+      <label>維修結果確認 / Verification Result</label>
       <select id="editVerifyResult">
-        <option value="">-- 尚未結案 --</option>
-        <option value="Machine resumed normal operation">☑ 機台恢復正常運作</option>
-        <option value="Requires continuous monitoring">☑ 需持續觀察</option>
+        <option value="">-- 尚未結案 / Pending --</option>
+        <option value="Machine resumed normal operation">☑ 機台恢復正常運作 (Machine resumed normal operation)</option>
+        <option value="Requires continuous monitoring">☑ 需持續觀察 (Requires continuous monitoring)</option>
       </select>
     </div>
     <div class="row-2">
-      <div class="form-group"><label>維修執行人員</label><input type="text" id="editRepairedBy"></div>
-      <div class="form-group"><label>單位主管簽核</label><input type="text" id="editSignOff"></div>
+      <div class="form-group"><label>維修人員 / Technician / Engineer</label><input type="text" id="editRepairedBy" placeholder="維修工程師姓名 / Technician Name"></div>
+      <div class="form-group">
+        <label id="signOffLabel">主管簽核 / Supervisor Approval <span id="signOffLockHint" style="font-size:11px;">(僅限 Manager / Admin 填寫)</span></label>
+        <input type="text" id="editSignOff" placeholder="僅限 Manager 或 Admin 填寫">
+      </div>
     </div>
     <div style="display:flex; gap:10px; margin-top:16px;">
-      <button class="btn-submit" style="margin:0;" onclick="saveUpdate()">💾 儲存更新</button>
-      <button class="btn-submit" style="margin:0; background:#64748b;" onclick="closeModal()">取消</button>
+      <button class="btn-submit" style="margin:0;" onclick="saveUpdate()">💾 儲存更新 / Save Update</button>
+      <button class="btn-submit" style="margin:0; background:#64748b;" onclick="closeModal()">取消 / Cancel</button>
     </div>
   </div>
 </div>
@@ -319,25 +351,43 @@
   let currentUser = null;
   let idleTimer = null;
 
-  // 10分鐘無操作自動登出計時器 (600,000 毫秒)
   function resetIdleTimer() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
-      alert("⏳ 系統偵測您已超過 10 分鐘無任何操作，為了資訊安全，已自動將您登出！");
+      alert("⏳ 系統偵測您已超過 10 分鐘無任何操作，為了資訊安全，已自動將您登出！\nInactivity timeout. You have been logged out.");
       doLogout();
     }, 600000);
   }
 
-  // 監聽網頁活動事件
   ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(evt => {
     window.addEventListener(evt, resetIdleTimer, true);
   });
 
+  function formatDateToYYYYMMDD(dateVal) {
+    if (!dateVal) return '';
+    let d = new Date(dateVal);
+    if (isNaN(d)) return String(dateVal).slice(0, 10);
+    let year = d.getFullYear();
+    let month = String(d.getMonth() + 1).padStart(2, '0');
+    let day = String(d.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+  }
+
   window.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('foundDate').valueAsDate = new Date();
-    document.getElementById('reqDate').valueAsDate = new Date();
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    const foundDateEl = document.getElementById('foundDate');
+    foundDateEl.type = 'date';
+    foundDateEl.value = todayStr;
+
+    const reqDateEl = document.getElementById('reqDate');
+    reqDateEl.type = 'date';
+    reqDateEl.value = todayStr;
     
-    // 預先從雲端載入使用者名單
     await fetchCloudUsers();
 
     const savedAccount = localStorage.getItem('runcard_user_account');
@@ -349,7 +399,6 @@
     }
   });
 
-  // 從雲端讀取使用者與收件人分頁
   async function fetchCloudUsers() {
     try {
       const res = await fetch(SCRIPT_URL + "?action=getUsers");
@@ -370,16 +419,22 @@
     const errEl = document.getElementById('loginError');
 
     if (!acc || !pwd) {
-      errEl.innerText = "請輸入帳號與密碼！";
+      errEl.innerText = "請輸入帳號與密碼！ / Please enter account & password.";
       return;
     }
 
     await fetchCloudUsers();
 
-    // 嚴格比對帳號與密碼（轉為字串比對以防型態不符）
     const user = cloudUsers.find(u => String(u.account).trim() === acc && String(u.password).trim() === pwd);
     if (!user) {
-      errEl.innerText = "❌ 帳號或密碼錯誤，請重新確認！";
+      errEl.innerText = "❌ 帳號或密碼錯誤，請重新確認！ / Invalid account or password.";
+      return;
+    }
+
+    if (String(user.password).trim() === "9999") {
+      currentUser = user;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('newStaffModal').style.display = 'flex';
       return;
     }
 
@@ -388,23 +443,68 @@
     resetIdleTimer();
   }
 
+  async function saveNewPassword() {
+    const p1 = document.getElementById('newPwd1').value.trim();
+    const p2 = document.getElementById('newPwd2').value.trim();
+    const errEl = document.getElementById('newPwdError');
+
+    if (!p1 || !p2) {
+      errEl.innerText = "請輸入完整的新密碼！ / Please enter new password.";
+      return;
+    }
+    if (p1 !== p2) {
+      errEl.innerText = "❌ 兩次輸入的密碼不一致！ / Passwords do not match.";
+      return;
+    }
+    if (p1 === "9999") {
+      errEl.innerText = "❌ 新密碼不能與預設密碼 9999 相同！ / Cannot be 9999.";
+      return;
+    }
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: "updatePassword",
+          account: currentUser.account,
+          newPassword: p1
+        })
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        alert("✅ 密碼修改成功！系統已將您的密碼更新，即將進入系統。\nPassword updated successfully!");
+        document.getElementById('newStaffModal').style.display = 'none';
+        currentUser.password = p1;
+        localStorage.setItem('runcard_user_account', currentUser.account);
+        applyUserRole(currentUser);
+        resetIdleTimer();
+      } else {
+        errEl.innerText = "❌ 儲存失敗 / Save Failed：" + result.message;
+      }
+    } catch (e) {
+      errEl.innerText = "❌ 網路連線錯誤 / Connection Error！";
+    }
+  }
+
   function applyUserRole(user) {
     currentUser = user;
     document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('newStaffModal').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
 
     document.getElementById('currentUserName').innerText = `${user.name} (${user.account})`;
     document.getElementById('currentUserDept').innerText = user.dept;
     
     const badge = document.getElementById('currentUserBadge');
-    // 判斷是否為 Admin (只要角色文字包含 Admin 即可)
-    const isAdmin = user.role.toLowerCase().includes('admin');
-    badge.innerText = user.role;
-    badge.className = `role-tag ${isAdmin ? 'tag-admin' : 'tag-eng'}`;
+    const roleStr = String(user.role || "").toLowerCase();
+    
+    const isAdminOrManager = roleStr.includes('admin') || roleStr.includes('manager');
+    
+    badge.innerText = user.role || 'user';
+    badge.className = `role-tag ${isAdminOrManager ? 'tag-admin' : 'tag-eng'}`;
     document.getElementById('reportedBy').value = `${user.name} (${user.account})`;
 
-    // 權限卡控：只有 Admin 可看到第 3 個分頁
-    document.getElementById('adminTabBtn').style.display = isAdmin ? 'block' : 'none';
+    document.getElementById('adminTabBtn').style.display = isAdminOrManager ? 'block' : 'none';
   }
 
   function doLogout() {
@@ -421,11 +521,10 @@
     if (tabId === 'adminTab') fetchCloudUsers();
   }
 
-  // 渲染管理員的使用者編輯表格
   function renderUserManageTable() {
     const tbody = document.getElementById('userTableBody');
     if (cloudUsers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">尚無使用者資料</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">尚無使用者資料 / No users found</td></tr>`;
       return;
     }
     tbody.innerHTML = cloudUsers.map((u, idx) => `
@@ -435,14 +534,14 @@
         <td><input type="text" value="${u.account}" id="u_acc_${idx}"></td>
         <td><input type="text" value="${u.password}" id="u_pwd_${idx}"></td>
         <td><input type="text" value="${u.mail}" id="u_mail_${idx}"></td>
-        <td><input type="text" value="${u.role}" id="u_role_${idx}"></td>
-        <td><button class="btn-action" onclick="removeUserRow(${idx})">刪除</button></td>
+        <td><input type="text" value="${u.role}" id="u_role_${idx}" placeholder="Manager/Admin/user"></td>
+        <td><button class="btn-action" onclick="removeUserRow(${idx})">刪除 / Delete</button></td>
       </tr>
     `).join('');
   }
 
   function addNewUserRow() {
-    cloudUsers.push({ name: "", dept: "", account: "", password: "", mail: "", role: "user" });
+    cloudUsers.push({ name: "", dept: "", account: "", password: "9999", mail: "", role: "user" });
     renderUserManageTable();
   }
 
@@ -451,7 +550,6 @@
     renderUserManageTable();
   }
 
-  // 將表格修改寫回雲端
   async function saveUserTableToCloud() {
     const updatedList = [];
     for (let i = 0; i < cloudUsers.length; i++) {
@@ -472,17 +570,16 @@
       });
       const result = await res.json();
       if (result.status === "success") {
-        alert("✅ 使用者與郵件清單已成功同步更新至 Google 試算表！");
+        alert("✅ 使用者與郵件清單已成功同步更新至 Google 試算表！\nUsers & mail list updated successfully!");
         await fetchCloudUsers();
       } else {
-        alert("❌ 更新失敗：" + result.message);
+        alert("❌ 更新失敗 / Update Failed：" + result.message);
       }
     } catch (err) {
-      alert("❌ 連線錯誤");
+      alert("❌ 連線錯誤 / Connection Error");
     }
   }
 
-  // 渲染寄信勾選方塊
   function renderEmailCheckboxes() {
     const container = document.getElementById('recipientCheckboxes');
     container.innerHTML = cloudUsers.map(u => `
@@ -492,7 +589,6 @@
     `).join('');
   }
 
-  // 立即發送測試郵件
   async function sendTestEmail() {
     const checkedBoxes = Array.from(document.querySelectorAll('#recipientCheckboxes input[type="checkbox"]:checked'));
     const selectedEmails = checkedBoxes.map(cb => cb.value);
@@ -501,14 +597,14 @@
 
     if (!finalRecipients) {
       statusEl.style.color = "#dc2626";
-      statusEl.innerText = "⚠️ 請至少勾選一位收件者信箱！";
+      statusEl.innerText = "⚠️ 請至少勾選一位收件者信箱！ / Please select at least one recipient.";
       return;
     }
 
     const btn = document.getElementById('testMailBtn');
     btn.disabled = true;
     statusEl.style.color = "#b45309";
-    statusEl.innerText = `⏳ 正在將 Excel 報表寄送至：${finalRecipients} ...`;
+    statusEl.innerText = `⏳ 正在將報表寄送至：${finalRecipients} ... / Sending report...`;
 
     try {
       const res = await fetch(SCRIPT_URL, {
@@ -521,20 +617,19 @@
         statusEl.innerText = "✅ " + result.message;
       } else {
         statusEl.style.color = "#dc2626";
-        statusEl.innerText = "❌ 寄送失敗：" + result.message;
+        statusEl.innerText = "❌ 寄送失敗 / Send Failed：" + result.message;
       }
     } catch (err) {
       statusEl.style.color = "#dc2626";
-      statusEl.innerText = "❌ 連線失敗";
+      statusEl.innerText = "❌ 連線失敗 / Connection Failed";
     }
     btn.disabled = false;
   }
 
-  // 提交新異常單
   document.getElementById('defectForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.innerText = "⏳ 資料傳送中...";
+    btn.disabled = true; btn.innerText = "⏳ 資料傳送中 / Submitting...";
 
     const payload = {
       action: "create",
@@ -545,7 +640,9 @@
       defectDesc: document.getElementById('defectDesc').value,
       reqDate: document.getElementById('reqDate').value,
       reqBy: document.getElementById('reqBy').value,
-      partInfo: document.getElementById('partInfo').value,
+      item: document.getElementById('item').value,
+      gpn: document.getElementById('gpn').value,
+      specDesc: document.getElementById('specDesc').value,
       reqQty: document.getElementById('reqQty').value,
       currStock: document.getElementById('currStock').value,
       status: document.getElementById('status').value,
@@ -558,66 +655,96 @@
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
       const result = await res.json();
       if (result.status === "success") {
-        alert("✅ 登記成功！異常追蹤單號：" + result.ticketId);
+        alert("✅ 登記成功！異常單號 / Ticket ID: " + result.ticketId);
         document.getElementById('defectForm').reset();
-        document.getElementById('foundDate').valueAsDate = new Date();
-        document.getElementById('reqDate').valueAsDate = new Date();
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        document.getElementById('foundDate').value = todayStr;
+        document.getElementById('reqDate').value = todayStr;
         document.getElementById('reportedBy').value = `${currentUser.name} (${currentUser.account})`;
       } else {
-        alert("❌ 發生錯誤：" + result.message);
+        alert("❌ 發生錯誤 / Error：" + result.message);
       }
     } catch (err) {
-      alert("❌ 連線失敗。");
+      alert("❌ 連線失敗 / Connection Failed。");
     }
-    btn.disabled = false; btn.innerText = "📤 提交機台異常登記表";
+    btn.disabled = false; btn.innerText = "📤 提交機台異常登記表 / Submit Defect Record";
   });
 
-  // 讀取紀錄看板
   async function loadRecords() {
     const tbody = document.getElementById('recordTableBody');
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">⏳ 正在從雲端同步最新追朔紀錄...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">⏳ 正在從雲端同步最新追朔紀錄... / Loading records...</td></tr>`;
     try {
       const res = await fetch(SCRIPT_URL);
       allRecords = await res.json();
       if (allRecords.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">目前尚無異常紀錄</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">目前尚無異常紀錄 / No records found</td></tr>`;
         return;
       }
       tbody.innerHTML = allRecords.map((r, idx) => {
-        const isClosed = r[16] !== "";
-        const badgeClass = isClosed ? "status-done" : "status-" + r[11].charAt(0);
+        const isClosed = r[18] !== "";
+        const badgeClass = isClosed ? "status-done" : "status-" + String(r[13]).charAt(0);
+        const formattedFoundDate = formatDateToYYYYMMDD(r[3]);
+        const formattedRepairDate = formatDateToYYYYMMDD(r[18]);
+
         return `
           <tr>
             <td><strong>${r[0]}</strong></td>
-            <td>${r[1]}<br><small style="color:#64748b;">線別: ${r[2]}</small></td>
-            <td>${r[3].toString().slice(0,10)}<br>${r[5]}</td>
-            <td>${r[8] || '-'}<br><small style="color:#0369a1;">PO: ${r[13] || '未開單'}</small></td>
+            <td>${r[1]}<br><small style="color:#64748b;">產線/Line: ${r[2]}</small></td>
+            <td>${formattedFoundDate}<br>${r[5]}</td>
             <td>
-              <span class="badge ${badgeClass}">${isClosed ? '✅ 已維修結案' : r[11]}</span><br>
-              <small style="color:#b91c1c;">${r[12] ? '卡關: ' + r[12] : ''}</small>
+              <span style="font-weight:bold; color:#1f4e78;">Item: ${r[8] || '-'}</span><br>
+              <small style="color:#0369a1;">GPN: ${r[9] || '-'}</small><br>
+              <small style="color:#334155;">Spec: ${r[10] || '-'}</small>
             </td>
-            <td>${r[16] ? r[16].toString().slice(0,10) : '<span style="color:#d97706;">處理中</span>'}</td>
-            <td><button class="btn-edit" onclick="openModal(${idx})">更新 / 結案</button></td>
+            <td>申請/Req: ${r[11]}<br>庫存/Stock: ${r[12]}</td>
+            <td>
+              <span class="badge ${badgeClass}">${isClosed ? '✅ 已維修結案 (Closed)' : r[13]}</span><br>
+              <small style="color:#b91c1c;">${r[14] ? '卡關/Bottleneck: ' + r[14] : ''}</small>
+            </td>
+            <td>${formattedRepairDate ? formattedRepairDate : '<span style="color:#d97706;">處理中 (Pending)</span>'}</td>
+            <td><button class="btn-edit" onclick="openModal(${idx})">更新 / 結案<br><small>Update</small></button></td>
           </tr>
         `;
       }).join('');
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:red;">載入失敗</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">載入失敗 / Load Failed</td></tr>`;
     }
   }
 
   function openModal(idx) {
     const r = allRecords[idx];
     document.getElementById('modalTicketId').innerText = r[0];
-    document.getElementById('editStatus').value = r[11];
-    document.getElementById('editBottleneck').value = r[12];
-    document.getElementById('editPoNumber').value = r[13];
-    document.getElementById('editArrivalDate').value = r[14] ? r[14].toString().slice(0,10) : "";
-    document.getElementById('editPickupDate').value = r[15] ? r[15].toString().slice(0,10) : "";
-    document.getElementById('editRepairDate').value = r[16] ? r[16].toString().slice(0,10) : "";
-    document.getElementById('editVerifyResult').value = r[17];
-    document.getElementById('editRepairedBy').value = r[18];
-    document.getElementById('editSignOff').value = r[19];
+    document.getElementById('editStatus').value = r[13];
+    document.getElementById('editBottleneck').value = r[14];
+    document.getElementById('editPoNumber').value = r[15];
+    document.getElementById('editArrivalDate').value = r[16] ? String(r[16]).slice(0,10) : "";
+    document.getElementById('editPickupDate').value = r[17] ? String(r[17]).slice(0,10) : "";
+    document.getElementById('editRepairDate').value = r[18] ? String(r[18]).slice(0,10) : "";
+    document.getElementById('editVerifyResult').value = r[19];
+    document.getElementById('editRepairedBy').value = r[20];
+    
+    const signOffInput = document.getElementById('editSignOff');
+    signOffInput.value = r[21] || "";
+
+    const roleStr = String(currentUser.role || "").toLowerCase();
+    const isManagerOrAdmin = roleStr.includes("manager") || roleStr.includes("admin");
+
+    if (isManagerOrAdmin) {
+      signOffInput.disabled = false;
+      signOffInput.style.backgroundColor = "#fff";
+      document.getElementById('signOffLockHint').innerText = "(已授權 Manager/Admin 主管簽核權限 / Authorized)";
+      document.getElementById('signOffLockHint').style.color = "#15803d";
+    } else {
+      signOffInput.disabled = true;
+      signOffInput.style.backgroundColor = "#f1f5f9";
+      document.getElementById('signOffLockHint').innerText = "(⚠️ 非 Manager/Admin 權限，無法修改 / Locked)";
+      document.getElementById('signOffLockHint').style.color = "#dc2626";
+    }
+
     document.getElementById('editModal').style.display = 'flex';
   }
 
@@ -626,6 +753,7 @@
   async function saveUpdate() {
     const payload = {
       action: "update",
+      operatorAccount: currentUser.account,
       ticketId: document.getElementById('modalTicketId').innerText,
       status: document.getElementById('editStatus').value,
       bottleneck: document.getElementById('editBottleneck').value,
@@ -637,12 +765,15 @@
       repairedBy: document.getElementById('editRepairedBy').value,
       signOff: document.getElementById('editSignOff').value
     };
+
     const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
     const result = await res.json();
     if (result.status === "success") {
-      alert("✅ 進度已更新！");
+      alert("✅ 進度已更新！ / Progress updated successfully!");
       closeModal();
       loadRecords();
+    } else {
+      alert("❌ " + result.message);
     }
   }
 </script>
