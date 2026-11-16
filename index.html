@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>機台異常品登記與備品追朔系統 (Run Card)</title>
+  <style>
+    :root { --primary: #1f4e78; --secondary: #4a86e8; --bg: #f4f6f9; --border: #cbd5e1; }
+    body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+    .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
+    .header { background: var(--primary); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .header h1 { margin: 0; font-size: 20px; }
+    
+    /* 登入遮罩與卡片 */
+    .login-box { max-width: 440px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-top: 5px solid var(--primary); }
+    .login-box h2 { margin-top: 0; color: var(--primary); font-size: 20px; text-align: center; }
+    .role-hint { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 12px; color: #475569; margin-bottom: 16px; line-height: 1.6; }
+
+    /* 主介面與分頁 */
+    #mainApp { display: none; }
+    .user-bar { background: #e2e8f0; padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px solid var(--border); }
+    .role-tag { padding: 3px 10px; border-radius: 12px; font-weight: bold; color: #fff; font-size: 12px; }
+    .tag-admin { background: #b91c1c; }
+    .tag-eng { background: #1d4ed8; }
+
+    .tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid var(--primary); flex-wrap: wrap; }
+    .tab-btn { flex: 1; min-width: 150px; padding: 14px; border: none; background: none; font-size: 14px; font-weight: bold; cursor: pointer; color: #475569; }
+    .tab-btn.active { background: #fff; color: var(--primary); border-top: 3px solid var(--primary); }
+    .tab-content { display: none; padding: 24px; }
+    .tab-content.active { display: block; }
+    
+    .runcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border: 2px solid var(--primary); padding: 16px; border-radius: 6px; }
+    .section-title { background: #9bc2e6; color: #0f172a; font-weight: bold; padding: 8px 12px; margin: 0 0 12px 0; border-radius: 4px; font-size: 14px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #334155; }
+    input[type="text"], input[type="date"], input[type="number"], input[type="password"], select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-submit { background: var(--primary); color: #fff; border: none; padding: 12px 24px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 16px; }
+    .btn-submit:hover { background: #163a5c; }
+    
+    /* 最高權限設定面板 */
+    .admin-mail-panel { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+    .recipient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin: 10px 0; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #fde68a; max-height: 150px; overflow-y: auto; }
+    .recipient-item { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+    .recipient-item input[type="checkbox"] { width: auto; margin: 0; }
+
+    /* 雲端使用者表格管理區 */
+    .user-table-container { margin-top: 15px; overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+
+    /* 進度看板表格 */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+    th { background: #f1f5f9; color: #0f172a; position: sticky; top: 0; }
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+    .status-1 { background: #fef3c7; color: #92400e; }
+    .status-2 { background: #ffedd5; color: #9a3412; }
+    .status-3 { background: #dbeafe; color: #1e40af; }
+    .status-4 { background: #dcfce7; color: #166534; }
+    .status-done { background: #e2e8f0; color: #334155; }
+    .btn-edit { background: var(--secondary); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .btn-action { background: #dc2626; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
+    .modal-box { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; }
+    @media (max-width: 768px) { .runcard-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- 步驟 1：初始權限驗證畫面 -->
+<div id="loginScreen" class="login-box">
+  <h2>🔐 機台異常追朔系統 - 身分驗證</h2>
+  <div class="role-hint">
+    <strong>請輸入您的雲端帳號與密碼進行登入：</strong><br>
+    (對應試算表 「MAIL收件人員」 分頁中的帳號與密碼，例如帳號 <code>admin</code>、密碼 <code>123</code>)[cite: 3]
+  </div>
+  <div class="form-group">
+    <label>帳號 (Account) *</label>
+    <input type="text" id="loginAccount" placeholder="例如: admin / owen / user">
+  </div>
+  <div class="form-group">
+    <label>密碼 (Password) *</label>
+    <input type="password" id="loginPassword" placeholder="請輸入密碼" onkeypress="if(event.key==='Enter') doLogin()">
+  </div>
+  <button class="btn-submit" onclick="doLogin()">登入系統</button>
+  <div id="loginError" style="color:#dc2626; font-size:13px; margin-top:10px; text-align:center; font-weight:bold;"></div>
+</div>
+
+<!-- 步驟 2：登入後主系統畫面 -->
+<div id="mainApp" class="container">
+  <div class="header">
+    <h1>📋 Machine Defect & Spare Parts Application Tracking Run Card</h1>
+    <span style="font-size: 13px;">每日 08:00 自動寄送 Excel 報表 (10分鐘無操作將自動登出)</span>
+  </div>
+
+  <!-- 當前使用者狀態列 -->
+  <div class="user-bar">
+    <div>
+      登入人員：<strong id="currentUserName"></strong> (<span id="currentUserDept"></span>)
+      <span id="currentUserBadge" class="role-tag"></span>
+    </div>
+    <button class="btn-action" onclick="doLogout()">登出系統 (Logout)</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('formTab', this)">➕ 1. 登記機台異常與備品申請</button>
+    <button class="tab-btn" onclick="switchTab('listTab', this)">📊 2. 異常品追朔進度紀錄表</button>
+    <button class="tab-btn" id="adminTabBtn" style="display:none; color:#b45309;" onclick="switchTab('adminTab', this)">👑 3. 最高權限與收件/用戶管理</button>
+  </div>
+
+  <!-- 分頁一：新增登記 -->
+  <div id="formTab" class="tab-content active">
+    <form id="defectForm">
+      <div class="runcard-grid">
+        <div>
+          <div class="section-title">I. Basic Information & Defect Status (基本資料與異常狀態)</div>
+          <div class="form-group">
+            <label>Equipment Name & ID (機台名稱/編號) *</label>
+            <input type="text" id="equipment" placeholder="例：SMT-Mounter-01" required>
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Production Line (產線/線別) *</label>
+              <input type="text" id="line" placeholder="例：Line A" required>
+            </div>
+            <div class="form-group">
+              <label>Date Defect Found (異常發現日期) *</label>
+              <input type="date" id="foundDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Reported By (發現人員 / 工號) *</label>
+            <input type="text" id="reportedBy" required>
+          </div>
+          <div class="form-group">
+            <label>Detailed Defect Description (不良狀態詳細描述) *</label>
+            <textarea id="defectDesc" rows="5" placeholder="請明確描述故障現象、損壞部件與機台目前是否停機..." required></textarea>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">II. Spare Parts Request & Approval Progress (備品申請與進度)</div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Spare Parts Request Date (備品申請日期)</label>
+              <input type="date" id="reqDate">
+            </div>
+            <div class="form-group">
+              <label>Requested By (申請人員)</label>
+              <input type="text" id="reqBy" placeholder="申請工程師姓名">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Part Number & Name (備品料號與品名)</label>
+            <input type="text" id="partInfo" placeholder="例：PN-99812 伺服馬達">
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Requested Q'ty (申請數量)</label>
+              <input type="number" id="reqQty" value="1" min="0">
+            </div>
+            <div class="form-group">
+              <label>Current Stock (現有庫存)</label>
+              <input type="number" id="currStock" value="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Current Status & Progress (目前審核與處理進度)</label>
+            <select id="status">
+              <option value="1. Pending Supervisor Approval">1. 待主管審核 (Pending Supervisor Approval)</option>
+              <option value="2. Pending Procurement / Quotation">2. 採購/詢價處理中 (Pending Procurement / Quotation)</option>
+              <option value="3. Vendor Preparing / In Transit">3. 廠商備貨或運輸中 (Vendor Preparing / In Transit)</option>
+              <option value="4. Parts Arrived at Warehouse">4. 備品已到倉 (Parts Arrived at Warehouse)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bottleneck / Stuck at (目前卡關階段與原因說明)</label>
+            <input type="text" id="bottleneck" placeholder="例：待課長簽核 / 廠商報價中">
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Purchase Order Number (採購單號 PO)</label>
+              <input type="text" id="poNumber" placeholder="例：PO-2026111601">
+            </div>
+            <div class="form-group">
+              <label>ETA / Arrival Date (預計或實際到貨日)</label>
+              <input type="date" id="arrivalDate">
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="submitBtn">📤 提交機台異常登記表</button>
+    </form>
+  </div>
+
+  <!-- 分頁二：追朔紀錄看板 -->
+  <div id="listTab" class="tab-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <strong>即時異常品追朔紀錄表</strong>
+      <button class="btn-edit" onclick="loadRecords()">🔄 重新整理</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>單號</th>
+            <th>機台 / 產線</th>
+            <th>發現日期 / 異常描述</th>
+            <th>申請備品 / PO單號</th>
+            <th>目前進度與卡關說明</th>
+            <th>維修完畢日</th>
+            <th id="actionColHeader">操作</th>
+          </tr>
+        </thead>
+        <tbody id="recordTableBody">
+          <tr><td colspan="7" style="text-align:center;">載入資料中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 分頁三：最高權限設定與收件/用戶管理 -->
+  <div id="adminTab" class="tab-content">
+    <div class="admin-mail-panel">
+      <h3 style="margin-top:0; color:#b45309;">👑 3. 最高權限設定：使用者權限與郵件收件人管理</h3>
+      <p style="font-size:13px; color:#78350f; margin-bottom:12px;">
+        在此可直接維護雲端 <strong>MAIL收件人員</strong> 分頁中的所有人員、部門、帳號、密碼、MAIL 與權限[cite: 3]。修改後點擊儲存即可即時更新！
+      </p>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong>👥 雲端使用者與收件人清單管理：</strong>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-edit" style="background:#15803d;" onclick="addNewUserRow()">➕ 新增一列</button>
+          <button class="btn-edit" style="background:#d97706;" onclick="saveUserTableToCloud()">💾 儲存所有修改至雲端</button>
+        </div>
+      </div>
+
+      <div class="user-table-container">
+        <table id="userManageTable">
+          <thead>
+            <tr>
+              <th>人員 (Name)</th>
+              <th>部門 (Dept)</th>
+              <th>帳號 (Account)</th>
+              <th>密碼 (Password)</th>
+              <th>MAIL</th>
+              <th>權限角色 / 備註</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr><td colspan="7" style="text-align:center;">正在載入使用者名單...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr style="border:0; border-top:1px solid #fde68a; margin:20px 0;">
+
+      <h4 style="margin-top:0; color:#b45309;">📧 Excel 進度報表手動寄信測試</h4>
+      <label>勾選本次要接收報表的收件者：</label>
+      <div class="recipient-grid" id="recipientCheckboxes"></div>
+
+      <button class="btn-submit" id="testMailBtn" style="background:#d97706; margin-top:10px;" onclick="sendTestEmail()">
+        🚀 立即發送測試 Excel 報表 Mail
+      </button>
+      <div id="mailTestStatus" style="margin-top:12px; font-size:14px; font-weight:bold;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 更新進度與維修結案視窗 -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <h3 style="margin-top:0; color:var(--primary);">🛠️ 更新追朔進度與維修結案紀錄 (<span id="modalTicketId"></span>)</h3>
+    <div class="section-title">II. 更新備品申請與採購進度</div>
+    <div class="form-group">
+      <label>目前進度階段 (Current Status)</label>
+      <select id="editStatus">
+        <option value="1. Pending Supervisor Approval">1. 待主管審核 (Pending Supervisor Approval)</option>
+        <option value="2. Pending Procurement / Quotation">2. 採購/詢價處理中 (Pending Procurement / Quotation)</option>
+        <option value="3. Vendor Preparing / In Transit">3. 廠商備貨或運輸中 (Vendor Preparing / In Transit)</option>
+        <option value="4. Parts Arrived at Warehouse">4. 備品已到倉 (Parts Arrived at Warehouse)</option>
+      </select>
+    </div>
+    <div class="row-2">
+      <div class="form-group"><label>卡關說明</label><input type="text" id="editBottleneck"></div>
+      <div class="form-group"><label>採購單號 (PO)</label><input type="text" id="editPoNumber"></div>
+    </div>
+    <div class="form-group"><label>備品到貨日期</label><input type="date" id="editArrivalDate"></div>
+
+    <div class="section-title">III. Repair & Closure Record (維修與結案紀錄)</div>
+    <div class="row-2">
+      <div class="form-group"><label>備品領用日期</label><input type="date" id="editPickupDate"></div>
+      <div class="form-group"><label>維修完畢日期</label><input type="date" id="editRepairDate"></div>
+    </div>
+    <div class="form-group">
+      <label>維修結果確認</label>
+      <select id="editVerifyResult">
+        <option value="">-- 尚未結案 --</option>
+        <option value="Machine resumed normal operation">☑ 機台恢復正常運作</option>
+        <option value="Requires continuous monitoring">☑ 需持續觀察</option>
+      </select>
+    </div>
+    <div class="row-2">
+      <div class="form-group"><label>維修執行人員</label><input type="text" id="editRepairedBy"></div>
+      <div class="form-group"><label>單位主管簽核</label><input type="text" id="editSignOff"></div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button class="btn-submit" style="margin:0;" onclick="saveUpdate()">💾 儲存更新</button>
+      <button class="btn-submit" style="margin:0; background:#64748b;" onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyN-jSNrAwIFWmRUgxOIwmFEADpc1wtSSrQ-1fpYLQngEU92TLV8AYB-k9lAgyceAO8fQ/exec";
+  let allRecords = [];
+  let cloudUsers = []; 
+  let currentUser = null;
+  let idleTimer = null;
+
+  // 10分鐘無操作自動登出計時器 (600,000 毫秒)
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      alert("⏳ 系統偵測您已超過 10 分鐘無任何操作，為了資訊安全，已自動將您登出！");
+      doLogout();
+    }, 600000);
+  }
+
+  // 監聽網頁活動事件
+  ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(evt => {
+    window.addEventListener(evt, resetIdleTimer, true);
+  });
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('foundDate').valueAsDate = new Date();
+    document.getElementById('reqDate').valueAsDate = new Date();
+    
+    // 預先從雲端載入使用者名單
+    await fetchCloudUsers();
+
+    const savedAccount = localStorage.getItem('runcard_user_account');
+    if (savedAccount) {
+      const found = cloudUsers.find(u => u.account === savedAccount);
+      if (found) {
+        applyUserRole(found);
+      }
+    }
+  });
+
+  // 從雲端讀取使用者與收件人分頁
+  async function fetchCloudUsers() {
+    try {
+      const res = await fetch(SCRIPT_URL + "?action=getUsers");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        cloudUsers = data;
+        renderUserManageTable();
+        renderEmailCheckboxes();
+      }
+    } catch (e) {
+      console.error("無法取得雲端使用者名單", e);
+    }
+  }
+
+  async function doLogin() {
+    const acc = document.getElementById('loginAccount').value.trim();
+    const pwd = document.getElementById('loginPassword').value.trim();
+    const errEl = document.getElementById('loginError');
+
+    if (!acc || !pwd) {
+      errEl.innerText = "請輸入帳號與密碼！";
+      return;
+    }
+
+    await fetchCloudUsers();
+
+    // 嚴格比對帳號與密碼（轉為字串比對以防型態不符）
+    const user = cloudUsers.find(u => String(u.account).trim() === acc && String(u.password).trim() === pwd);
+    if (!user) {
+      errEl.innerText = "❌ 帳號或密碼錯誤，請重新確認！";
+      return;
+    }
+
+    localStorage.setItem('runcard_user_account', user.account);
+    applyUserRole(user);
+    resetIdleTimer();
+  }
+
+  function applyUserRole(user) {
+    currentUser = user;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+
+    document.getElementById('currentUserName').innerText = `${user.name} (${user.account})`;
+    document.getElementById('currentUserDept').innerText = user.dept;
+    
+    const badge = document.getElementById('currentUserBadge');
+    // 判斷是否為 Admin (只要角色文字包含 Admin 即可)
+    const isAdmin = user.role.toLowerCase().includes('admin');
+    badge.innerText = user.role;
+    badge.className = `role-tag ${isAdmin ? 'tag-admin' : 'tag-eng'}`;
+    document.getElementById('reportedBy').value = `${user.name} (${user.account})`;
+
+    // 權限卡控：只有 Admin 可看到第 3 個分頁
+    document.getElementById('adminTabBtn').style.display = isAdmin ? 'block' : 'none';
+  }
+
+  function doLogout() {
+    localStorage.removeItem('runcard_user_account');
+    location.reload();
+  }
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    if (tabId === 'listTab') loadRecords();
+    if (tabId === 'adminTab') fetchCloudUsers();
+  }
+
+  // 渲染管理員的使用者編輯表格
+  function renderUserManageTable() {
+    const tbody = document.getElementById('userTableBody');
+    if (cloudUsers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">尚無使用者資料</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = cloudUsers.map((u, idx) => `
+      <tr>
+        <td><input type="text" value="${u.name}" id="u_name_${idx}"></td>
+        <td><input type="text" value="${u.dept}" id="u_dept_${idx}"></td>
+        <td><input type="text" value="${u.account}" id="u_acc_${idx}"></td>
+        <td><input type="text" value="${u.password}" id="u_pwd_${idx}"></td>
+        <td><input type="text" value="${u.mail}" id="u_mail_${idx}"></td>
+        <td><input type="text" value="${u.role}" id="u_role_${idx}"></td>
+        <td><button class="btn-action" onclick="removeUserRow(${idx})">刪除</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function addNewUserRow() {
+    cloudUsers.push({ name: "", dept: "", account: "", password: "", mail: "", role: "user" });
+    renderUserManageTable();
+  }
+
+  function removeUserRow(idx) {
+    cloudUsers.splice(idx, 1);
+    renderUserManageTable();
+  }
+
+  // 將表格修改寫回雲端
+  async function saveUserTableToCloud() {
+    const updatedList = [];
+    for (let i = 0; i < cloudUsers.length; i++) {
+      updatedList.push({
+        name: document.getElementById(`u_name_${i}`).value.trim(),
+        dept: document.getElementById(`u_dept_${i}`).value.trim(),
+        account: document.getElementById(`u_acc_${i}`).value.trim(),
+        password: document.getElementById(`u_pwd_${i}`).value.trim(),
+        mail: document.getElementById(`u_mail_${i}`).value.trim(),
+        role: document.getElementById(`u_role_${i}`).value.trim()
+      });
+    }
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "updateUsers", users: updatedList })
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        alert("✅ 使用者與郵件清單已成功同步更新至 Google 試算表！");
+        await fetchCloudUsers();
+      } else {
+        alert("❌ 更新失敗：" + result.message);
+      }
+    } catch (err) {
+      alert("❌ 連線錯誤");
+    }
+  }
+
+  // 渲染寄信勾選方塊
+  function renderEmailCheckboxes() {
+    const container = document.getElementById('recipientCheckboxes');
+    container.innerHTML = cloudUsers.map(u => `
+      <label class="recipient-item">
+        <input type="checkbox" value="${u.mail}" checked> ${u.name} - ${u.dept} (${u.mail})
+      </label>
+    `).join('');
+  }
+
+  // 立即發送測試郵件
+  async function sendTestEmail() {
+    const checkedBoxes = Array.from(document.querySelectorAll('#recipientCheckboxes input[type="checkbox"]:checked'));
+    const selectedEmails = checkedBoxes.map(cb => cb.value);
+    const finalRecipients = selectedEmails.join(', ');
+    const statusEl = document.getElementById('mailTestStatus');
+
+    if (!finalRecipients) {
+      statusEl.style.color = "#dc2626";
+      statusEl.innerText = "⚠️ 請至少勾選一位收件者信箱！";
+      return;
+    }
+
+    const btn = document.getElementById('testMailBtn');
+    btn.disabled = true;
+    statusEl.style.color = "#b45309";
+    statusEl.innerText = `⏳ 正在將 Excel 報表寄送至：${finalRecipients} ...`;
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "testEmail", recipients: finalRecipients })
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        statusEl.style.color = "#15803d";
+        statusEl.innerText = "✅ " + result.message;
+      } else {
+        statusEl.style.color = "#dc2626";
+        statusEl.innerText = "❌ 寄送失敗：" + result.message;
+      }
+    } catch (err) {
+      statusEl.style.color = "#dc2626";
+      statusEl.innerText = "❌ 連線失敗";
+    }
+    btn.disabled = false;
+  }
+
+  // 提交新異常單
+  document.getElementById('defectForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.innerText = "⏳ 資料傳送中...";
+
+    const payload = {
+      action: "create",
+      equipment: document.getElementById('equipment').value,
+      line: document.getElementById('line').value,
+      foundDate: document.getElementById('foundDate').value,
+      reportedBy: document.getElementById('reportedBy').value,
+      defectDesc: document.getElementById('defectDesc').value,
+      reqDate: document.getElementById('reqDate').value,
+      reqBy: document.getElementById('reqBy').value,
+      partInfo: document.getElementById('partInfo').value,
+      reqQty: document.getElementById('reqQty').value,
+      currStock: document.getElementById('currStock').value,
+      status: document.getElementById('status').value,
+      bottleneck: document.getElementById('bottleneck').value,
+      poNumber: document.getElementById('poNumber').value,
+      arrivalDate: document.getElementById('arrivalDate').value
+    };
+
+    try {
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const result = await res.json();
+      if (result.status === "success") {
+        alert("✅ 登記成功！異常追蹤單號：" + result.ticketId);
+        document.getElementById('defectForm').reset();
+        document.getElementById('foundDate').valueAsDate = new Date();
+        document.getElementById('reqDate').valueAsDate = new Date();
+        document.getElementById('reportedBy').value = `${currentUser.name} (${currentUser.account})`;
+      } else {
+        alert("❌ 發生錯誤：" + result.message);
+      }
+    } catch (err) {
+      alert("❌ 連線失敗。");
+    }
+    btn.disabled = false; btn.innerText = "📤 提交機台異常登記表";
+  });
+
+  // 讀取紀錄看板
+  async function loadRecords() {
+    const tbody = document.getElementById('recordTableBody');
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">⏳ 正在從雲端同步最新追朔紀錄...</td></tr>`;
+    try {
+      const res = await fetch(SCRIPT_URL);
+      allRecords = await res.json();
+      if (allRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">目前尚無異常紀錄</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = allRecords.map((r, idx) => {
+        const isClosed = r[16] !== "";
+        const badgeClass = isClosed ? "status-done" : "status-" + r[11].charAt(0);
+        return `
+          <tr>
+            <td><strong>${r[0]}</strong></td>
+            <td>${r[1]}<br><small style="color:#64748b;">線別: ${r[2]}</small></td>
+            <td>${r[3].toString().slice(0,10)}<br>${r[5]}</td>
+            <td>${r[8] || '-'}<br><small style="color:#0369a1;">PO: ${r[13] || '未開單'}</small></td>
+            <td>
+              <span class="badge ${badgeClass}">${isClosed ? '✅ 已維修結案' : r[11]}</span><br>
+              <small style="color:#b91c1c;">${r[12] ? '卡關: ' + r[12] : ''}</small>
+            </td>
+            <td>${r[16] ? r[16].toString().slice(0,10) : '<span style="color:#d97706;">處理中</span>'}</td>
+            <td><button class="btn-edit" onclick="openModal(${idx})">更新 / 結案</button></td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:red;">載入失敗</td></tr>`;
+    }
+  }
+
+  function openModal(idx) {
+    const r = allRecords[idx];
+    document.getElementById('modalTicketId').innerText = r[0];
+    document.getElementById('editStatus').value = r[11];
+    document.getElementById('editBottleneck').value = r[12];
+    document.getElementById('editPoNumber').value = r[13];
+    document.getElementById('editArrivalDate').value = r[14] ? r[14].toString().slice(0,10) : "";
+    document.getElementById('editPickupDate').value = r[15] ? r[15].toString().slice(0,10) : "";
+    document.getElementById('editRepairDate').value = r[16] ? r[16].toString().slice(0,10) : "";
+    document.getElementById('editVerifyResult').value = r[17];
+    document.getElementById('editRepairedBy').value = r[18];
+    document.getElementById('editSignOff').value = r[19];
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+  async function saveUpdate() {
+    const payload = {
+      action: "update",
+      ticketId: document.getElementById('modalTicketId').innerText,
+      status: document.getElementById('editStatus').value,
+      bottleneck: document.getElementById('editBottleneck').value,
+      poNumber: document.getElementById('editPoNumber').value,
+      arrivalDate: document.getElementById('editArrivalDate').value,
+      pickupDate: document.getElementById('editPickupDate').value,
+      repairDate: document.getElementById('editRepairDate').value,
+      verifyResult: document.getElementById('editVerifyResult').value,
+      repairedBy: document.getElementById('editRepairedBy').value,
+      signOff: document.getElementById('editSignOff').value
+    };
+    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const result = await res.json();
+    if (result.status === "success") {
+      alert("✅ 進度已更新！");
+      closeModal();
+      loadRecords();
+    }
+  }
+</script>
+</body>
+</html>
