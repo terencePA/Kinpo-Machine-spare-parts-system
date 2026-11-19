@@ -253,7 +253,7 @@
     <div class="admin-mail-panel">
       <h3 style="margin-top:0; color:#b45309;">👑 3. 最高權限設定：使用者權限與郵件收件人管理<br><span style="font-size:14px; font-weight:normal;">Admin & Recipient Management</span></h3>
       <p style="font-size:13px; color:#78350f; margin-bottom:12px;">
-        在此可維護試算表 <code>MAIL收件人員</code> 分頁中的人員、部門、帳號、密碼、MAIL 與權限角色 (F 欄填入 Manager 或 Admin 即具備最高主管簽核權限)。
+        在此可維護試算表 <code>MAIL收件人員</code> 分頁中的人員、部門、帳號、密碼、MAIL、權限角色 (F 欄填入 Manager 或 Admin 即具備最高主管簽核權限) 與 G 欄 Auto mail (ok) 設定。
       </p>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -274,11 +274,12 @@
               <th>密碼 / Password</th>
               <th>MAIL</th>
               <th>權限角色 / Position (Manager/Admin)</th>
+              <th>自動寄信 / Auto mail (ok)</th>
               <th>操作 / Action</th>
             </tr>
           </thead>
           <tbody id="userTableBody">
-            <tr><td colspan="7" style="text-align:center;">正在載入使用者名單... / Loading...</td></tr>
+            <tr><td colspan="8" style="text-align:center;">正在載入使用者名單... / Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -286,8 +287,7 @@
       <hr style="border:0; border-top:1px solid #fde68a; margin:20px 0;">
 
       <h4 style="margin-top:0; color:#b45309;">📧 Excel 進度報表手動寄信測試 / Test Email Report</h4>
-      <label>勾選本次要接收報表的收件者 / Select Recipients：</label>
-      <div class="recipient-grid" id="recipientCheckboxes"></div>
+      <label>手動發送報表（將自動依後端 G 欄設定為 ok 的名單發送）：</label>
 
       <button class="btn-submit" id="testMailBtn" style="background:#d97706; margin-top:10px;" onclick="sendTestEmail()">
         🚀 立即發送測試 Excel 報表 Mail / Send Test Email
@@ -406,7 +406,6 @@
       if (Array.isArray(data)) {
         cloudUsers = data;
         renderUserManageTable();
-        renderEmailCheckboxes();
       }
     } catch (e) {
       console.error("無法取得雲端使用者名單", e);
@@ -524,7 +523,7 @@
   function renderUserManageTable() {
     const tbody = document.getElementById('userTableBody');
     if (cloudUsers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">尚無使用者資料 / No users found</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">尚無使用者資料 / No users found</td></tr>`;
       return;
     }
     tbody.innerHTML = cloudUsers.map((u, idx) => `
@@ -535,13 +534,14 @@
         <td><input type="text" value="${u.password}" id="u_pwd_${idx}"></td>
         <td><input type="text" value="${u.mail}" id="u_mail_${idx}"></td>
         <td><input type="text" value="${u.role}" id="u_role_${idx}" placeholder="Manager/Admin/user"></td>
+        <td><input type="text" value="${u.autoMail || ''}" id="u_automail_${idx}" placeholder="ok"></td>
         <td><button class="btn-action" onclick="removeUserRow(${idx})">刪除 / Delete</button></td>
       </tr>
     `).join('');
   }
 
   function addNewUserRow() {
-    cloudUsers.push({ name: "", dept: "", account: "", password: "9999", mail: "", role: "user" });
+    cloudUsers.push({ name: "", dept: "", account: "", password: "9999", mail: "", role: "user", autoMail: "" });
     renderUserManageTable();
   }
 
@@ -559,7 +559,8 @@
         account: document.getElementById(`u_acc_${i}`).value.trim(),
         password: document.getElementById(`u_pwd_${i}`).value.trim(),
         mail: document.getElementById(`u_mail_${i}`).value.trim(),
-        role: document.getElementById(`u_role_${i}`).value.trim()
+        role: document.getElementById(`u_role_${i}`).value.trim(),
+        autoMail: document.getElementById(`u_automail_${i}`).value.trim()
       });
     }
 
@@ -570,7 +571,7 @@
       });
       const result = await res.json();
       if (result.status === "success") {
-        alert("✅ 使用者與郵件清單已成功同步更新至 Google 試算表！\nUsers & mail list updated successfully!");
+        alert("✅ 使用者與 G 欄自動寄信清單已成功同步更新至 Google 試算表！\nUsers & Auto mail list updated successfully!");
         await fetchCloudUsers();
       } else {
         alert("❌ 更新失敗 / Update Failed：" + result.message);
@@ -580,36 +581,17 @@
     }
   }
 
-  function renderEmailCheckboxes() {
-    const container = document.getElementById('recipientCheckboxes');
-    container.innerHTML = cloudUsers.map(u => `
-      <label class="recipient-item">
-        <input type="checkbox" value="${u.mail}" checked> ${u.name} - ${u.dept} (${u.mail})
-      </label>
-    `).join('');
-  }
-
   async function sendTestEmail() {
-    const checkedBoxes = Array.from(document.querySelectorAll('#recipientCheckboxes input[type="checkbox"]:checked'));
-    const selectedEmails = checkedBoxes.map(cb => cb.value);
-    const finalRecipients = selectedEmails.join(', ');
     const statusEl = document.getElementById('mailTestStatus');
-
-    if (!finalRecipients) {
-      statusEl.style.color = "#dc2626";
-      statusEl.innerText = "⚠️ 請至少勾選一位收件者信箱！ / Please select at least one recipient.";
-      return;
-    }
-
     const btn = document.getElementById('testMailBtn');
     btn.disabled = true;
     statusEl.style.color = "#b45309";
-    statusEl.innerText = `⏳ 正在將報表寄送至：${finalRecipients} ... / Sending report...`;
+    statusEl.innerText = `⏳ 正在依後端 G 欄 ok 設定自動發送報表郵件... / Sending report...`;
 
     try {
       const res = await fetch(SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: "testEmail", recipients: finalRecipients })
+        body: JSON.stringify({ action: "testEmail", recipients: "" })
       });
       const result = await res.json();
       if (result.status === "success") {
